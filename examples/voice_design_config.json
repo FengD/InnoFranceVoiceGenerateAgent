@@ -1,0 +1,7 @@
+{
+  "text": "欢迎使用Qwen3-TTS Inno France项目，这是一个基于Qwen3-TTS的产品级实现。",
+  "language": "Chinese",
+  "instruct": "专业播音员声音，清晰明亮，语速适中",
+  "output_path": "examples/output_voice_design.wav",
+  "speed": 1.0
+}
