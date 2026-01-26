@@ -366,6 +366,7 @@ class Qwen3TTSInnoFrance:
             # Generate audio for each text chunk
             for chunk in text_chunks:
                 if chunk.strip():  # Process only non-empty text
+                    logger.info(f"Generating audio for speaker {speaker_tag} with text chunk: {chunk}")
                     wavs, sr = self.voice_clone_model.generate_voice_clone(
                         text=chunk,
                         language=speaker_languages[speaker_tag],
