@@ -102,57 +102,45 @@ Speaker configuration file example (speakers.json):
 
 Start the API server:
 ```bash
-python -m qwen3_tts_inno_france.api
+./app/start.sh
 ```
 
-By default, the API server runs on port 5000. You can change the port by setting the `PORT` environment variable.
+By default, the API server runs on port 8000. You can change the port by setting the `WEBAPP_PORT` environment variable.
 
-### 使用curl调用API服务
+### Using curl to call API services
 
-#### 1. 健康检查
+#### 1. Health Check
 ```bash
-curl http://localhost:5000/health
+curl http://localhost:8000/health
 ```
 
-#### 2. 声音设计
+#### 2. Voice Design
 ```bash
-curl -X POST http://localhost:5000/voice-design \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "你好，世界！",
-    "language": "Chinese",
-    "instruct": "年轻女性声音，语调活泼",
-    "output_path": "output.wav",
-    "speed": 1.2
-  }'
+curl -X POST http://localhost:8000/api/voice-design \
+  -F "text=Hello, world!" \
+  -F "language=Chinese" \
+  -F "instruct=Young female voice, lively tone" \
+  -F "speed=1.2"
 ```
 
-#### 3. 声音克隆
+#### 3. Voice Cloning
 ```bash
-curl -X POST http://localhost:5000/voice-clone \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "[SPEAKER0]第一个说话人的内容。[SPEAKER1]第二个说话人的内容。",
-    "speaker_configs": [
-      {
-        "speaker_tag": "[SPEAKER0]",
-        "ref_audio": "examples/voice_prompts/zh_old_man.wav",
-        "ref_text": "世间万物皆有其规律，年轻人，切勿急躁。静下心来，你会听到花开的声音，也会明白时间的重量。",
-        "language": "Chinese"
-      },
-      {
-        "speaker_tag": "[SPEAKER1]",
-        "design_text": "我是第二说话人，负责技术细节说明。",
-        "design_instruct": "中年男性声音，语调沉稳，专业可信",
-        "language": "Chinese"
-      }
-    ],
-    "output_path": "output.wav",
-    "speed": 1.1
-  }'
+curl -X POST http://localhost:8000/api/voice-clone \
+  -F "text=[SPEAKER0]First speaker content.[SPEAKER1]Second speaker content." \
+  -F "speaker_configs=[{\"speaker_tag\": \"[SPEAKER0]\", \"ref_audio\": \"examples/voice_prompts/zh_old_man.wav\", \"ref_text\": \"世间万物皆有其规律，年轻人，切勿急躁。静下心来，你会听到花开的声音，也会明白时间的重量。\", \"language\": \"Chinese\"}, {\"speaker_tag\": \"[SPEAKER1]\", \"design_text\": \"我是第二说话人，负责技术细节说明。\", \"design_instruct\": \"中年男性声音，语调沉稳，专业可信\", \"language\": \"Chinese\"}]" \
+  -F "speed=1.1"
 ```
 
-#### API Endpoints
+### Web Interface
+
+Start the web application:
+```bash
+./app/start.sh
+```
+
+By default, the web app runs on port 8000. Access it at `http://localhost:8000`
+
+### API Endpoints
 
 1. **Health Check**
    ```
@@ -162,75 +150,37 @@ curl -X POST http://localhost:5000/voice-clone \
 
 2. **Voice Design**
    ```
-   POST /voice-design
+   POST /api/voice-design
    ```
-   Request body (JSON):
-   ```json
-   {
-     "text": "Hello, world!",
-     "language": "Chinese",
-     "instruct": "Young female voice, lively tone",
-     "output_path": "output.wav",
-     "speed": 1.2
-   }
-   ```
+   Form data:
+   - text: Text to synthesize
+   - language: Language
+   - instruct: Voice description instruction
+   - speed: Audio playback speed (1.0-2.0, optional, default 1.0)
 
 3. **Voice Design via File**
    ```
-   POST /voice-design-file
+   POST /api/voice-design-file
    ```
    Upload a JSON configuration file with the key `config`.
 
 4. **Voice Clone**
    ```
-   POST /voice-clone
+   POST /api/voice-clone
    ```
-   Request body (JSON):
-   ```json
-   {
-     "text": "[SPEAKER0]First speaker content.[SPEAKER1]Second speaker content.",
-     "speaker_configs": [
-       {
-         "speaker_tag": "[SPEAKER0]",
-         "ref_audio": "speaker0.wav",
-         "ref_text": "Reference text",
-         "language": "Chinese"
-       },
-       {
-         "speaker_tag": "[SPEAKER1]",
-         "design_text": "Design text",
-         "design_instruct": "Male voice",
-         "language": "Chinese"
-       }
-     ],
-     "output_path": "output.wav",
-     "speed": 1.1
-   }
-   ```
+   Form data:
+   - text: Text to synthesize, can contain speaker markers
+   - speaker_configs: Speaker configuration JSON string
+   - speed: Audio playback speed (1.0-2.0, optional, default 1.0)
 
 5. **Voice Clone via Files**
    ```
-   POST /voice-clone-files
+   POST /api/voice-clone-files
    ```
    Upload two files:
    - `text_file`: Text file containing speaker markers
    - `speakers_config`: JSON file with speaker configurations
-
-### Web Interface
-
-Start the web application:
-```bash
-python -m qwen3_tts_inno_france.webapp
-```
-
-By default, the web app runs on port 8000. You can change the port by setting the `WEBAPP_PORT` environment variable.
-
-### 下载生成的音频文件
-
-在使用API生成音频文件后，可以通过以下方式下载：
-```bash
-curl -O http://localhost:5000/output.wav
-```
+   - `speed`: Audio playback speed (1.0-2.0, optional, default 1.0)
 
 ### Core Class: Qwen3TTSInnoFrance
 
@@ -296,7 +246,6 @@ This is particularly useful when dealing with non-sequential speaker tags like `
 - `VOICE_CLONE_MODEL_PATH`: Voice clone model path (default: "Qwen/Qwen3-TTS-12Hz-1.7B-Base")
 - `ATTN_IMPLEMENTATION`: Attention implementation (default: "sdpa")
 - `DEVICE`: Device for model inference (default: "cuda:0")
-- `PORT`: API server port (default: 5000)
 - `WEBAPP_PORT`: Web application port (default: 8000)
 - `LAZY_LOAD_MODELS`: Whether to load models on demand (default: "false"). Set to "true" to enable lazy loading.
 
@@ -307,8 +256,9 @@ This is particularly useful when dealing with non-sequential speaker tags like `
 - soundfile>=0.12.0
 - numpy>=1.21.0
 - scipy>=1.7.0
-- flask>=2.0.0
-- flask-cors>=3.0.0
+- fastapi>=0.68.0
+- uvicorn>=0.15.0
+- python-multipart>=0.0.5
 
 ## License
 
