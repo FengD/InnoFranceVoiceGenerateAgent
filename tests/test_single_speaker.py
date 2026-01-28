@@ -10,7 +10,7 @@ import json
 # Add the project root to the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from qwen3_tts_inno_france.core import Qwen3TTSInnoFrance
+from app.core import Qwen3TTSInnoFrance
 
 def test_single_speaker_without_tags():
     """Test single speaker without speaker tags in text"""

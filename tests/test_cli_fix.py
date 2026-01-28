@@ -17,7 +17,7 @@ def test_cli_command():
     
     # Test command
     cmd = [
-        "python", "-m", "qwen3_tts_inno_france.cli",
+        "python", "-m", "app.cli",
         "voice-clone",
         "--text-file", "examples/test_speaker_text.txt",
         "--speakers-config", "examples/speakers.json",

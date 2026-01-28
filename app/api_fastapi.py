@@ -1,28 +1,18 @@
-import os
-import json
-import tempfile
-import logging
 import io
+import json
+import logging
+import os
+import tempfile
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from fastapi.responses import StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
-from core import Qwen3TTSInnoFrance
+from app.core import Qwen3TTSInnoFrance
 import soundfile as sf
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = APIRouter()
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = APIRouter()
 
 # Initialize TTS engine
 tts_engine = None
@@ -35,18 +25,19 @@ def init_tts_engine():
         tts_engine = Qwen3TTSInnoFrance(device=device)
         logger.info("TTS engine initialized")
 
-@app.get('/health')
+@router.get('/health')
 async def health_check():
     """Health check endpoint"""
     logger.info("Health check requested")
     return {"status": "healthy", "service": "qwen3-tts-inno-france"}
 
-@app.post('/voice-design')
+@router.post('/voice-design')
 async def voice_design(
     text: str = Form(...),
     language: str = Form(...),
     instruct: str = Form(...),
-    speed: float = Form(1.0)
+    speed: float = Form(1.0),
+    output_filename: str = Form("output_voice_design.wav"),
 ):
     """Voice design endpoint"""
     try:
@@ -74,17 +65,18 @@ async def voice_design(
         wav_buffer.seek(0)
         
         # Return audio file directly using StreamingResponse
+        safe_name = os.path.basename(output_filename) if output_filename else "output_voice_design.wav"
         return StreamingResponse(
             wav_buffer,
             media_type='audio/wav',
-            headers={"Content-Disposition": "attachment; filename=output_voice_design.wav"}
+            headers={"Content-Disposition": f"attachment; filename={safe_name}"}
         )
         
     except Exception as e:
         logger.error(f"Voice design error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post('/voice-design-file')
+@router.post('/voice-design-file')
 async def voice_design_file(config: UploadFile = File(...)):
     """Voice design via file endpoint"""
     try:
@@ -128,11 +120,12 @@ async def voice_design_file(config: UploadFile = File(...)):
         logger.error(f"Voice design file error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post('/voice-clone')
+@router.post('/voice-clone')
 async def voice_clone(
     text: str = Form(...),
     speaker_configs: str = Form(...),
-    speed: float = Form(1.0)
+    speed: float = Form(1.0),
+    output_filename: str = Form("output_voice_clone.wav"),
 ):
     """Voice cloning endpoint"""
     try:
@@ -166,21 +159,23 @@ async def voice_clone(
         wav_buffer.seek(0)
         
         # Return audio file directly using StreamingResponse
+        safe_name = os.path.basename(output_filename) if output_filename else "output_voice_clone.wav"
         return StreamingResponse(
             wav_buffer,
             media_type='audio/wav',
-            headers={"Content-Disposition": "attachment; filename=output_voice_clone.wav"}
+            headers={"Content-Disposition": f"attachment; filename={safe_name}"}
         )
         
     except Exception as e:
         logger.error(f"Voice cloning error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post('/voice-clone-files')
+@router.post('/voice-clone-files')
 async def voice_clone_files(
     text_file: UploadFile = File(...),
     speakers_config: UploadFile = File(...),
-    speed: float = Form(1.0)
+    speed: float = Form(1.0),
+    output_filename: str = Form("output_voice_clone.wav"),
 ):
     """Voice cloning via files endpoint"""
     try:
@@ -231,10 +226,11 @@ async def voice_clone_files(
         wav_buffer.seek(0)
         
         # Return audio file directly using StreamingResponse
+        safe_name = os.path.basename(output_filename) if output_filename else "output_voice_clone.wav"
         return StreamingResponse(
             wav_buffer,
             media_type='audio/wav',
-            headers={"Content-Disposition": "attachment; filename=output_voice_clone.wav"}
+            headers={"Content-Disposition": f"attachment; filename={safe_name}"}
         )
         
     except Exception as e:

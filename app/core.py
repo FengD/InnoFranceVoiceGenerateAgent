@@ -100,6 +100,7 @@ class Qwen3TTSInnoFrance:
         
         sf.write(output_path, wavs[0], sr)
         logger.info(f"Voice design completed, output file: {output_path}")
+        return output_path
     def voice_design_cli_in_memory(self, text: str, language: str, instruct: str, speed: float = 1.0) -> Tuple[np.ndarray, int]:
         """
         Voice design via CLI parameters, returning audio data in memory
@@ -166,6 +167,7 @@ class Qwen3TTSInnoFrance:
         output_path = config.get('output_path', 'output_voice_design.json.wav')
         sf.write(output_path, wavs[0], sr)
         logger.info(f"Voice design completed, output file: {output_path}")
+        return output_path
     def voice_design_json_in_memory(self, config_path: str) -> Tuple[np.ndarray, int]:
         """
         Voice design via JSON configuration file, returning audio data in memory
@@ -437,15 +439,18 @@ class Qwen3TTSInnoFrance:
                     audio_segments.append(wavs[0])
                     
         # Concatenate all audio segments
-        if audio_segments:
-            final_audio = np.concatenate(audio_segments)
-            
-            # Adjust audio speed
-            if speed != 1.0:
-                final_audio = self._adjust_audio_speed(final_audio, speed)
-                
-            sf.write(output_path, final_audio, sr)
-            
+        if not audio_segments:
+            raise ValueError("No audio segments generated from the provided input")
+
+        final_audio = np.concatenate(audio_segments)
+
+        # Adjust audio speed
+        if speed != 1.0:
+            final_audio = self._adjust_audio_speed(final_audio, speed)
+
+        sf.write(output_path, final_audio, sr)
+        logger.info(f"Voice cloning completed, output file: {output_path}")
+        return output_path
     
     def voice_clone_with_speakers_in_memory(self, text: str, speaker_configs: List[Dict], speed: float = 1.0) -> Tuple[np.ndarray, int]:
         """
@@ -594,4 +599,3 @@ class Qwen3TTSInnoFrance:
         else:
             # Return empty audio if no segments were generated
             return np.array([]), 22050
-        return output_path

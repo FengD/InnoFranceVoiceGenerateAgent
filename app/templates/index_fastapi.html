@@ -20,7 +20,7 @@
         </div>
 
         <div class="tab-content">
-          <!-- 声音设计 Tab -->
+          <!-- Voice design tab -->
           <div id="voice-design" class="tab-pane active">
             <form id="design-form" enctype="multipart/form-data">
               <div class="form-group">
@@ -62,7 +62,7 @@
             </div>
           </div>
 
-          <!-- 声音克隆 Tab -->
+          <!-- Voice clone tab -->
           <div id="voice-clone" class="tab-pane">
             <form id="clone-form" enctype="multipart/form-data">
               <div class="form-group">
@@ -102,21 +102,21 @@
     </main>
 
     <script>
-      // Tab切换功能
+      // Tab switching
       document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', () => {
-          // 移除所有激活状态
+          // Clear active state
           document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
           document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
           
-          // 激活当前标签
+          // Activate current tab
           button.classList.add('active');
           const tabId = button.getAttribute('data-tab');
           document.getElementById(tabId).classList.add('active');
         });
       });
 
-      // 速度滑块值显示
+      // Speed slider updates
       document.getElementById('design-speed').addEventListener('input', function() {
         document.getElementById('design-speed-value').textContent = this.value;
       });
@@ -125,7 +125,7 @@
         document.getElementById('clone-speed-value').textContent = this.value;
       });
 
-      // 声音设计功能
+      // Voice design
       document.getElementById('design-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -137,11 +137,11 @@
           button.textContent = '生成中...';
           button.disabled = true;
           
-          // 显示加载状态
+          // Show loading state
           resultSection.innerHTML = '<div class="loading"><div class="spinner"></div><div>正在生成声音...</div></div>';
           resultSection.style.display = 'block';
           
-          // 创建FormData对象
+          // Build FormData
           const formData = new FormData(this);
           
           const response = await fetch('/voice-design', {
@@ -150,11 +150,11 @@
           });
           
           if (response.ok) {
-            // 处理音频数据流
+            // Handle audio stream
             const blob = await response.blob();
             const audioUrl = URL.createObjectURL(blob);
             
-            // 显示结果
+            // Show results
             resultSection.innerHTML = `
               <h3>生成结果</h3>
               <audio id="design-audio" class="audio-player" controls>
@@ -164,7 +164,7 @@
             `;
             resultSection.style.display = 'block';
           } else {
-            // 尝试解析错误响应
+            // Try parsing error response
             try {
               const errorResult = await response.json();
               resultSection.innerHTML = `<div class="statusText err">错误: ${errorResult.detail}</div>`;
@@ -180,7 +180,7 @@
         }
       });
 
-      // 声音克隆功能
+      // Voice cloning
       document.getElementById('clone-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -192,11 +192,11 @@
           button.textContent = '克隆中...';
           button.disabled = true;
           
-          // 显示加载状态
+          // Show loading state
           resultSection.innerHTML = '<div class="loading"><div class="spinner"></div><div>正在克隆声音...</div></div>';
           resultSection.style.display = 'block';
           
-          // 验证JSON格式
+          // Validate JSON format
           const speakersText = document.getElementById('clone-speakers').value;
           try {
             JSON.parse(speakersText);
@@ -207,7 +207,7 @@
             return;
           }
           
-          // 创建FormData对象
+          // Build FormData
           const formData = new FormData(this);
           
           const response = await fetch('/voice-clone', {
@@ -216,11 +216,11 @@
           });
           
           if (response.ok) {
-            // 处理音频数据流
+            // Handle audio stream
             const blob = await response.blob();
             const audioUrl = URL.createObjectURL(blob);
             
-            // 显示结果
+            // Show results
             resultSection.innerHTML = `
               <h3>生成结果</h3>
               <audio id="clone-audio" class="audio-player" controls>
@@ -230,7 +230,7 @@
             `;
             resultSection.style.display = 'block';
           } else {
-            // 尝试解析错误响应
+            // Try parsing error response
             try {
               const errorResult = await response.json();
               resultSection.innerHTML = `<div class="statusText err">错误: ${errorResult.detail}</div>`;
@@ -246,7 +246,7 @@
         }
       });
 
-      // 初始化显示第一个标签页的内容
+      // Initialize default tab
       document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.tab-content').classList.add('active');
         document.getElementById('voice-design').classList.add('active');

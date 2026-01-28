@@ -1,36 +1,22 @@
-import os
-import json
-import tempfile
-import logging
 import io
+import json
+import logging
+import os
+import tempfile
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Request
 from fastapi.responses import StreamingResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
-from core import Qwen3TTSInnoFrance
+from app.core import Qwen3TTSInnoFrance
 import soundfile as sf
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = APIRouter()
+router = APIRouter()
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Setup templates
-templates = Jinja2Templates(directory="templates")
+base_dir = os.path.dirname(os.path.abspath(__file__))
+templates = Jinja2Templates(directory=os.path.join(base_dir, "templates"))
 
 # Initialize TTS engine
 tts_engine = None
@@ -43,13 +29,13 @@ def init_tts_engine():
         tts_engine = Qwen3TTSInnoFrance(device=device)
         logger.info("TTS engine initialized")
 
-@app.get("/", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Home page"""
     logger.info("Home page accessed")
     return templates.TemplateResponse("index_fastapi.html", {"request": request})
 
-@app.post('/voice-design')
+@router.post('/voice-design')
 async def voice_design(
     text: str = Form(...),
     language: str = Form(...),
@@ -92,7 +78,7 @@ async def voice_design(
         logger.error(f"Voice design error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post('/voice-design-file')
+@router.post('/voice-design-file')
 async def voice_design_file(config: UploadFile = File(...)):
     """Voice design via file endpoint"""
     try:
@@ -136,7 +122,7 @@ async def voice_design_file(config: UploadFile = File(...)):
         logger.error(f"Voice design file error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post('/voice-clone')
+@router.post('/voice-clone')
 async def voice_clone(
     text: str = Form(...),
     speaker_configs: str = Form(...),
@@ -184,7 +170,7 @@ async def voice_clone(
         logger.error(f"Voice cloning error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post('/voice-clone-files')
+@router.post('/voice-clone-files')
 async def voice_clone_files(
     text_file: UploadFile = File(...),
     speakers_config: UploadFile = File(...),
@@ -249,7 +235,7 @@ async def voice_clone_files(
         logger.error(f"Voice cloning files error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get('/health')
+@router.get('/health')
 async def health_check():
     """Health check endpoint"""
     logger.info("Health check requested")

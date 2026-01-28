@@ -32,7 +32,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "qwen3-tts-inno=qwen3_tts_inno_france.cli:main",
+            "qwen3-tts-inno=app.cli:main",
         ],
     },
 )

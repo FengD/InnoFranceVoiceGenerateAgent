@@ -7,7 +7,7 @@ import logging
 # Add project root directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from qwen3_tts_inno_france.core import Qwen3TTSInnoFrance
+from app.core import Qwen3TTSInnoFrance
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

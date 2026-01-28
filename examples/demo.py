@@ -8,7 +8,7 @@ Qwen3-TTS Inno France Usage Examples
 import os
 import json
 import logging
-from qwen3_tts_inno_france.core import Qwen3TTSInnoFrance
+from app.core import Qwen3TTSInnoFrance
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
