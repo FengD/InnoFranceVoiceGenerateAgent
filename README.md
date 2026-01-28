@@ -2,6 +2,15 @@
 
 A product-level implementation based on Qwen3-TTS, providing voice design and voice cloning capabilities.
 
+
+## Voice Design
+![App screenshot](docs/doc.png)
+
+
+## Voice Clone
+![App screenshot](docs/doc2.png)
+
+
 ## Features
 
 1. **Voice Design**:

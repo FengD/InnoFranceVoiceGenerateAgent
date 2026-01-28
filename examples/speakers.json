@@ -1,14 +1,14 @@
 [
   {
     "speaker_tag": "[SPEAKER0]",
-    "ref_audio": "examples/voice_prompts/zh_old_man.wav",
-    "ref_text": "世间万物皆有其规律，年轻人，切勿急躁。静下心来，你会听到花开的声音，也会明白时间的重量。",
+    "design_text": "我是第一个说话人，负责技术主持。",
+    "design_instruct": "中年女性的声音，语调沉稳，专业可信，是一位主持人",
     "language": "Chinese"
   },
   {
     "speaker_tag": "[SPEAKER1]",
     "design_text": "我是第二说话人，负责技术细节说明。",
-    "design_instruct": "中年男性声音，语调沉稳，专业可信",
+    "design_instruct": "老年男性声音，声音沙哑而有磁性，是一位人体健康方面的专家",
     "language": "Chinese"
   }
 ]

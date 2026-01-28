@@ -1,1 +1,0 @@
-This is a sample reference text for speaker 1. The content of this text file will be used as the reference text for voice cloning when using the ref_text_file field in the speaker configuration.
