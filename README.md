@@ -24,6 +24,12 @@ Voice Clone:
 pip install -r requirements.txt
 ```
 
+Environment variables are optional. A sample file is provided:
+
+```bash
+cp env.example .env
+```
+
 ## Quick Start
 
 ```bash
@@ -176,11 +182,13 @@ python -m app.mcp_server --transport stdio
 python -m app.mcp_server --transport sse --host 127.0.0.1 --port 8000
 ```
 
-Tools return base64-encoded WAV data and optional saved file paths.
+Tools return base64-encoded WAV data and optional saved file paths. The SSE host/port are configured when FastMCP is initialized.
 
 ![App screenshot](docs/mcp_test.png)
 
 ## Environment Variables
+
+`env.example` lists all supported environment variables and sample values.
 
 - `VOICE_DESIGN_MODEL_PATH`: Voice design model path.
 - `VOICE_CLONE_MODEL_PATH`: Voice clone model path.

@@ -14,7 +14,6 @@ from mcp.server.fastmcp import FastMCP
 
 from app.core import Qwen3TTSInnoFrance
 
-mcp = FastMCP("Qwen3-TTS Inno France", json_response=True)
 tts_engine = None
 
 
@@ -40,148 +39,150 @@ def _save_wav(audio_data, sample_rate: int, output_path: str) -> str:
     return str(path)
 
 
-@mcp.tool()
-def design_voice(
-    text: str,
-    language: str,
-    instruct: str,
-    speed: float = 1.0,
-    output_path: Optional[str] = None,
-) -> dict:
-    """
-    Design a voice from text and instruction.
+def create_mcp(host: str, port: int) -> FastMCP:
+    mcp = FastMCP("Qwen3-TTS Inno France", json_response=True, host=host, port=port)
 
-    Returns base64 WAV data and optional output file path.
-    """
-    try:
-        engine = _get_engine()
-        audio_data, sample_rate = engine.voice_design_cli_in_memory(
-            text=text,
-            language=language,
-            instruct=instruct,
-            speed=speed,
-        )
-        encoded = _encode_wav(audio_data, sample_rate)
-        saved_path = None
-        if output_path:
-            saved_path = _save_wav(audio_data, sample_rate, output_path)
-        return {
-            "success": True,
-            "audio_base64": encoded,
-            "sample_rate": sample_rate,
-            "output_path": saved_path,
-        }
-    except Exception as exc:
-        return {"success": False, "error": f"Voice design failed: {str(exc)}"}
+    @mcp.tool()
+    def design_voice(
+        text: str,
+        language: str,
+        instruct: str,
+        speed: float = 1.0,
+        output_path: Optional[str] = None,
+    ) -> dict:
+        """
+        Design a voice from text and instruction.
 
+        Returns base64 WAV data and optional output file path.
+        """
+        try:
+            engine = _get_engine()
+            audio_data, sample_rate = engine.voice_design_cli_in_memory(
+                text=text,
+                language=language,
+                instruct=instruct,
+                speed=speed,
+            )
+            encoded = _encode_wav(audio_data, sample_rate)
+            saved_path = None
+            if output_path:
+                saved_path = _save_wav(audio_data, sample_rate, output_path)
+            return {
+                "success": True,
+                "audio_base64": encoded,
+                "sample_rate": sample_rate,
+                "output_path": saved_path,
+            }
+        except Exception as exc:
+            return {"success": False, "error": f"Voice design failed: {str(exc)}"}
 
-@mcp.tool()
-def design_voice_from_config(
-    config_json: str,
-    output_path: Optional[str] = None,
-) -> dict:
-    """
-    Design a voice from JSON configuration.
+    @mcp.tool()
+    def design_voice_from_config(
+        config_json: str,
+        output_path: Optional[str] = None,
+    ) -> dict:
+        """
+        Design a voice from JSON configuration.
 
-    Returns base64 WAV data and optional output file path.
-    """
-    try:
-        config = json.loads(config_json)
-        text = config.get("text")
-        language = config.get("language")
-        instruct = config.get("instruct")
-        if not all([text, language, instruct]):
-            raise ValueError("Config must include text, language, and instruct")
+        Returns base64 WAV data and optional output file path.
+        """
+        try:
+            config = json.loads(config_json)
+            text = config.get("text")
+            language = config.get("language")
+            instruct = config.get("instruct")
+            if not all([text, language, instruct]):
+                raise ValueError("Config must include text, language, and instruct")
 
-        engine = _get_engine()
-        audio_data, sample_rate = engine.voice_design_cli_in_memory(
-            text=text,
-            language=language,
-            instruct=instruct,
-            speed=config.get("speed", 1.0),
-        )
-        encoded = _encode_wav(audio_data, sample_rate)
-        final_output = output_path or config.get("output_path")
-        saved_path = None
-        if final_output:
-            saved_path = _save_wav(audio_data, sample_rate, final_output)
-        return {
-            "success": True,
-            "audio_base64": encoded,
-            "sample_rate": sample_rate,
-            "output_path": saved_path,
-        }
-    except Exception as exc:
-        return {"success": False, "error": f"Voice design failed: {str(exc)}"}
+            engine = _get_engine()
+            audio_data, sample_rate = engine.voice_design_cli_in_memory(
+                text=text,
+                language=language,
+                instruct=instruct,
+                speed=config.get("speed", 1.0),
+            )
+            encoded = _encode_wav(audio_data, sample_rate)
+            final_output = output_path or config.get("output_path")
+            saved_path = None
+            if final_output:
+                saved_path = _save_wav(audio_data, sample_rate, final_output)
+            return {
+                "success": True,
+                "audio_base64": encoded,
+                "sample_rate": sample_rate,
+                "output_path": saved_path,
+            }
+        except Exception as exc:
+            return {"success": False, "error": f"Voice design failed: {str(exc)}"}
 
+    @mcp.tool()
+    def clone_voice(
+        text: str,
+        speaker_configs_json: str,
+        speed: float = 1.0,
+        output_path: Optional[str] = None,
+    ) -> dict:
+        """
+        Clone voices from text and speaker configuration.
 
-@mcp.tool()
-def clone_voice(
-    text: str,
-    speaker_configs_json: str,
-    speed: float = 1.0,
-    output_path: Optional[str] = None,
-) -> dict:
-    """
-    Clone voices from text and speaker configuration.
+        Returns base64 WAV data and optional output file path.
+        """
+        try:
+            speaker_configs = json.loads(speaker_configs_json)
+            engine = _get_engine()
+            audio_data, sample_rate = engine.voice_clone_with_speakers_in_memory(
+                text=text,
+                speaker_configs=speaker_configs,
+                speed=speed,
+            )
+            encoded = _encode_wav(audio_data, sample_rate)
+            saved_path = None
+            if output_path:
+                saved_path = _save_wav(audio_data, sample_rate, output_path)
+            return {
+                "success": True,
+                "audio_base64": encoded,
+                "sample_rate": sample_rate,
+                "output_path": saved_path,
+            }
+        except Exception as exc:
+            return {"success": False, "error": f"Voice clone failed: {str(exc)}"}
 
-    Returns base64 WAV data and optional output file path.
-    """
-    try:
-        speaker_configs = json.loads(speaker_configs_json)
-        engine = _get_engine()
-        audio_data, sample_rate = engine.voice_clone_with_speakers_in_memory(
-            text=text,
-            speaker_configs=speaker_configs,
-            speed=speed,
-        )
-        encoded = _encode_wav(audio_data, sample_rate)
-        saved_path = None
-        if output_path:
-            saved_path = _save_wav(audio_data, sample_rate, output_path)
-        return {
-            "success": True,
-            "audio_base64": encoded,
-            "sample_rate": sample_rate,
-            "output_path": saved_path,
-        }
-    except Exception as exc:
-        return {"success": False, "error": f"Voice clone failed: {str(exc)}"}
+    @mcp.tool()
+    def clone_voice_from_files(
+        text_path: str,
+        speaker_configs_path: str,
+        speed: float = 1.0,
+        output_path: Optional[str] = None,
+    ) -> dict:
+        """
+        Clone voices from text and speaker config files.
 
+        Returns base64 WAV data and optional output file path.
+        """
+        try:
+            text = Path(text_path).read_text(encoding="utf-8")
+            speaker_configs = json.loads(Path(speaker_configs_path).read_text(encoding="utf-8"))
+            engine = _get_engine()
+            audio_data, sample_rate = engine.voice_clone_with_speakers_in_memory(
+                text=text,
+                speaker_configs=speaker_configs,
+                speed=speed,
+            )
+            encoded = _encode_wav(audio_data, sample_rate)
+            saved_path = None
+            if output_path:
+                saved_path = _save_wav(audio_data, sample_rate, output_path)
+            return {
+                "success": True,
+                "audio_base64": encoded,
+                "sample_rate": sample_rate,
+                "output_path": saved_path,
+            }
+        except Exception as exc:
+            return {"success": False, "error": f"Voice clone failed: {str(exc)}"}
 
-@mcp.tool()
-def clone_voice_from_files(
-    text_path: str,
-    speaker_configs_path: str,
-    speed: float = 1.0,
-    output_path: Optional[str] = None,
-) -> dict:
-    """
-    Clone voices from text and speaker config files.
-
-    Returns base64 WAV data and optional output file path.
-    """
-    try:
-        text = Path(text_path).read_text(encoding="utf-8")
-        speaker_configs = json.loads(Path(speaker_configs_path).read_text(encoding="utf-8"))
-        engine = _get_engine()
-        audio_data, sample_rate = engine.voice_clone_with_speakers_in_memory(
-            text=text,
-            speaker_configs=speaker_configs,
-            speed=speed,
-        )
-        encoded = _encode_wav(audio_data, sample_rate)
-        saved_path = None
-        if output_path:
-            saved_path = _save_wav(audio_data, sample_rate, output_path)
-        return {
-            "success": True,
-            "audio_base64": encoded,
-            "sample_rate": sample_rate,
-            "output_path": saved_path,
-        }
-    except Exception as exc:
-        return {"success": False, "error": f"Voice clone failed: {str(exc)}"}
+    return mcp
 
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
@@ -207,14 +208,12 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
 
 
 def run_server(transport: str, host: str, port: int) -> None:
+    mcp = create_mcp(host=host, port=port)
     if transport == "stdio":
         mcp.run()
         return
     if transport == "sse":
-        try:
-            mcp.run(transport="sse", host=host, port=port)
-        except TypeError:
-            mcp.run(transport="sse")
+        mcp.run(transport="sse")
         return
     raise ValueError(f"Unsupported transport: {transport}")
 
